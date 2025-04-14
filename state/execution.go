@@ -125,7 +125,7 @@ func (blockExec *BlockExecutor) CreateProposalBlock(
 
 	txs := blockExec.mempool.ReapMaxBytesMaxGas(maxReapBytes, maxGas)
 	commit := lastExtCommit.ToCommit()
-	block := state.MakeBlock(height, txs, commit, evidence, proposerAddr)
+	block := state.MakeBlock(height, txs, commit, evidence, proposerAddr, types.Proof{})
 	rpp, err := blockExec.proxyApp.PrepareProposal(
 		ctx,
 		&abci.RequestPrepareProposal{
@@ -151,12 +151,17 @@ func (blockExec *BlockExecutor) CreateProposalBlock(
 		return nil, err
 	}
 
+	proof, err := types.ProofFromProto(rpp.Proof)
+	if err != nil {
+		return nil, err
+	}
+
 	txl := types.ToTxs(rpp.Txs)
 	if err := txl.Validate(maxDataBytes); err != nil {
 		return nil, err
 	}
 
-	return state.MakeBlock(height, txl, commit, evidence, proposerAddr), nil
+	return state.MakeBlock(height, txl, commit, evidence, proposerAddr, proof), nil
 }
 
 func (blockExec *BlockExecutor) ProcessProposal(
@@ -172,6 +177,7 @@ func (blockExec *BlockExecutor) ProcessProposal(
 		Misbehavior:        block.Evidence.Evidence.ToABCI(),
 		ProposerAddress:    block.ProposerAddress,
 		NextValidatorsHash: block.NextValidatorsHash,
+		Proof:              block.Proof.ToProto(),
 	})
 	if err != nil {
 		return false, err

@@ -1718,6 +1718,7 @@ func (cs *State) finalizeCommit(height int64) {
 		"hash", log.NewLazyBlockHash(block),
 		"root", block.AppHash,
 		"num_txs", len(block.Txs),
+		"proof", block.Proof,
 	)
 	logger.Debug("committed block", "block", log.NewLazySprintf("%v", block))
 

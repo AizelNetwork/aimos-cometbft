@@ -48,6 +48,7 @@ type Block struct {
 	Data         `json:"data"`
 	Evidence     EvidenceData `json:"evidence"`
 	LastCommit   *Commit      `json:"last_commit"`
+	Proof        `json:"proof"`
 }
 
 // ValidateBasic performs basic validation that doesn't involve state data.
@@ -240,6 +241,7 @@ func (b *Block) ToProto() (*cmtproto.Block, error) {
 	}
 	pb.Evidence = *protoEvidence
 
+	pb.Proof = b.Proof.ToProto()
 	return pb, nil
 }
 
@@ -271,6 +273,14 @@ func BlockFromProto(bp *cmtproto.Block) (*Block, error) {
 			return nil, err
 		}
 		b.LastCommit = lc
+	}
+
+	if bp.Proof != nil {
+		td, err := ProofFromProto(bp.Proof)
+		if err != nil {
+			return nil, err
+		}
+		b.Proof = td
 	}
 
 	return b, b.ValidateBasic()
@@ -1552,4 +1562,41 @@ func BlockIDFromProto(bID *cmtproto.BlockID) (*BlockID, error) {
 // Protobuf representation.
 func ProtoBlockIDIsNil(bID *cmtproto.BlockID) bool {
 	return len(bID.Hash) == 0 && ProtoPartSetHeaderIsZero(&bID.PartSetHeader)
+}
+
+//--------------------------------------------------------------------------------
+
+// Proof
+type Proof struct {
+	Proof map[string][]byte `json:"proof"`
+}
+
+// ToProto converts Proof to protobuf
+func (proof *Proof) ToProto() *cmtproto.Proof {
+	if proof == nil {
+		return nil
+	}
+
+	return &cmtproto.Proof{
+		ReportWithResult: proof.Proof,
+	}
+}
+
+// FromProto sets a protobuf Proof to the given pointer.
+// It returns an error if the proof is invalid.
+func ProofFromProto(td *cmtproto.Proof) (Proof, error) {
+	if td == nil {
+		return Proof{}, errors.New("nil Proof")
+	}
+
+	proof := Proof{
+		Proof: td.ReportWithResult,
+	}
+
+	return proof, proof.ValidateBasic()
+}
+
+// ValidateBasic performs basic validation.
+func (td Proof) ValidateBasic() error {
+	return nil
 }

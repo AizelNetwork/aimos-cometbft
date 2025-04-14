@@ -106,7 +106,7 @@ func MakeVoteNoError(
 // MakeBlock returns a new block with an empty header, except what can be
 // computed from itself.
 // It populates the same set of fields validated by ValidateBasic.
-func MakeBlock(height int64, txs []Tx, lastCommit *Commit, evidence []Evidence) *Block {
+func MakeBlock(height int64, txs []Tx, lastCommit *Commit, evidence []Evidence, proof Proof) *Block {
 	block := &Block{
 		Header: Header{
 			Version: cmtversion.Consensus{Block: version.BlockProtocol, App: 0},
@@ -117,6 +117,7 @@ func MakeBlock(height int64, txs []Tx, lastCommit *Commit, evidence []Evidence) 
 		},
 		Evidence:   EvidenceData{Evidence: evidence},
 		LastCommit: lastCommit,
+		Proof:      proof,
 	}
 	block.fillHeader()
 	return block

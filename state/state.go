@@ -237,10 +237,11 @@ func (state State) MakeBlock(
 	lastCommit *types.Commit,
 	evidence []types.Evidence,
 	proposerAddress []byte,
+	proof types.Proof,
 ) *types.Block {
 
 	// Build base block with block data.
-	block := types.MakeBlock(height, txs, lastCommit, evidence)
+	block := types.MakeBlock(height, txs, lastCommit, evidence, proof)
 
 	// Set time.
 	var timestamp time.Time
