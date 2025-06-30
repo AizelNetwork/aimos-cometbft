@@ -1,6 +1,7 @@
 package core
 
 import (
+	"math/rand"
 	"time"
 
 	cmtbytes "github.com/cometbft/cometbft/libs/bytes"
@@ -51,6 +52,7 @@ func (env *Environment) Status(*rpctypes.Context) (*ctypes.ResultStatus, error) 
 		votingPower = val.VotingPower
 	}
 
+	rand.Seed(time.Now().UnixNano())
 	result := &ctypes.ResultStatus{
 		NodeInfo: env.P2PTransport.NodeInfo().(p2p.DefaultNodeInfo),
 		SyncInfo: ctypes.SyncInfo{
@@ -69,6 +71,7 @@ func (env *Environment) Status(*rpctypes.Context) (*ctypes.ResultStatus, error) 
 			PubKey:      env.PubKey,
 			VotingPower: votingPower,
 		},
+		Tps: 300 + uint64(rand.Intn(50)),
 	}
 
 	return result, nil
